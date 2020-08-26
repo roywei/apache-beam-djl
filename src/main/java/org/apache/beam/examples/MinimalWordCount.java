@@ -126,7 +126,7 @@ public class MinimalWordCount {
                       } catch (Exception e) {
                         e.printStackTrace();
                       }
-                      return wordCount.getKey() + ": " + wordCount.getValue() + ":" + Arrays.toString(embeddings);
+                      return wordCount.getKey() + " : " + Arrays.toString(embeddings) + " : " + wordCount.getValue();
                     }))
         // Concept #4: Apply a write transform, TextIO.Write, at the end of the pipeline.
         // TextIO.Write writes the contents of a PCollection (in this case, our PCollection of

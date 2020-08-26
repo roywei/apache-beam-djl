@@ -46,6 +46,7 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -133,7 +134,7 @@ public class WordCount {
       } catch (Exception e) {
         e.printStackTrace();
       }
-      return input.getKey() + ": " + input.getValue() + " : " + embeddings ;
+      return input.getKey() + " : " + Arrays.toString(embeddings) + " : "+ input.getValue() ;
     }
   }
 
