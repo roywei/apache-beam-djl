@@ -210,7 +210,7 @@ public class WordCount {
         NDManager manager = model.getNDManager();
         NDList result =
                 new NDList(
-                        wordEmbedding.embedText(manager, Collections.singletonList("the")));
+                        wordEmbedding.embedText(manager, Collections.singletonList(word)));
         return result.singletonOrThrow().toFloatArray();
       }
     }
