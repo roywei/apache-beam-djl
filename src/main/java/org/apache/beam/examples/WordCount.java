@@ -17,6 +17,14 @@
  */
 package org.apache.beam.examples;
 
+import ai.djl.MalformedModelException;
+import ai.djl.modality.nlp.embedding.EmbeddingException;
+import ai.djl.modality.nlp.embedding.ModelZooTextEmbedding;
+import ai.djl.mxnet.zoo.MxModelZoo;
+import ai.djl.ndarray.NDList;
+import ai.djl.ndarray.NDManager;
+import ai.djl.repository.zoo.ModelNotFoundException;
+import ai.djl.repository.zoo.ZooModel;
 import org.apache.beam.examples.common.ExampleUtils;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.TextIO;
@@ -36,6 +44,9 @@ import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
+
+import java.io.IOException;
+import java.util.Collections;
 
 /**
  * An example that counts words in Shakespeare and includes Beam best practices.
@@ -116,7 +127,13 @@ public class WordCount {
   public static class FormatAsTextFn extends SimpleFunction<KV<String, Long>, String> {
     @Override
     public String apply(KV<String, Long> input) {
-      return input.getKey() + ": " + input.getValue();
+      float[] embeddings = new float[]{};
+      try {
+        embeddings = embedWord(input.getKey());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return input.getKey() + ": " + input.getValue() + " : " + embeddings ;
     }
   }
 
@@ -183,6 +200,19 @@ public class WordCount {
         .apply("WriteCounts", TextIO.write().to(options.getOutput()));
 
     p.run().waitUntilFinish();
+  }
+
+  public static float[] embedWord(String word) throws IOException, ModelNotFoundException, MalformedModelException,
+          EmbeddingException {
+    try (ZooModel<NDList, NDList> model = MxModelZoo.GLOVE.loadModel()) {
+      try (ModelZooTextEmbedding wordEmbedding = new ModelZooTextEmbedding(model)) {
+        NDManager manager = model.getNDManager();
+        NDList result =
+                new NDList(
+                        wordEmbedding.embedText(manager, Collections.singletonList("the")));
+        return result.singletonOrThrow().toFloatArray();
+      }
+    }
   }
 
   public static void main(String[] args) {
